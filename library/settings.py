@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'library.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 
-if env.bool("DEBUG"):
+if not env.bool("USE_REMOTE_DB"):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -98,7 +98,7 @@ if env.bool("DEBUG"):
 else:
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.mysql",
+            "ENGINE": "django.db.backends.postgresql",
             "NAME": env.str("DB_NAME"),
             "USER": env.str("DB_USER"),
             "PASSWORD": env.str("DB_PASSWORD"),

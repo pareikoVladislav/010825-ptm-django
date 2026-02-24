@@ -1,0 +1,57 @@
+services:
+  web: # придумываем из головы
+    build: # !команда!
+      context: . # !команда!
+      dockerfile: Dockerfile # !команда!
+    restart: always # !команда!
+    command: > # !команда!
+      sh -c "
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8000
+      "
+    env_file: # !команда!
+      - .env
+
+    ports: # !команда!
+      - "8000:8000"
+
+    volumes: # !команда!
+      - .:/app/
+
+    depends_on: # !команда!
+      database: # !название сервсиа!
+        condition: service_healthy
+
+    networks:
+      django_app:
+        # не забыть докинуть доп пример на существующую сеть
+
+  database:
+    image: postgres:16
+    restart: always
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      django_app:
+
+
+volumes:
+  postgres_data:
+
+
+networks:
+  django_app:
+    driver: bridge
