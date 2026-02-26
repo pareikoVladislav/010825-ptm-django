@@ -47,7 +47,6 @@ INSTALLED_APPS = [
 
     # local apps
     'my_app.apps.MyAppConfig',
-
 ]
 
 MIDDLEWARE = [
