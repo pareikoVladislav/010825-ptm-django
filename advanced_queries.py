@@ -17,8 +17,7 @@ from django.db.models import (
     Avg, QuerySet, ExpressionWrapper, F
 )
 
-from my_app.models import Book
-
+from my_app.models import Book, Author, Category
 
 # books_count = Book.objects.aggregate(
 #     qwerty=Count('id'),
@@ -268,11 +267,127 @@ from my_app.models import Book
 #     published_date__year__gte=2000
 # )
 
-books = Book.objects.annotate(
-    pub_year=ExtractYear('published_date')
-).values('pub_year').annotate(
-    count=Count('id')
-).order_by('-pub_year')
+# books = Book.objects.annotate(
+#     pub_year=ExtractYear('published_date')
+# ).values('pub_year').annotate(
+#     count=Count('id')
+# ).order_by('-pub_year')
+#
+# for book in books:
+#     print(book)
 
-for book in books:
-    print(book)
+from my_app.models import Author, AuthorProfile
+
+from debug_tools import QueryDebug
+from django.db.models import Prefetch
+
+# data = Author.objects.all().prefetch_related(
+#     Prefetch(
+#         'books',
+#         queryset=Book.objects.filter()
+#     )
+# )
+
+# data = Author.objects.all().prefetch_related('books')
+#
+# print(data.query)
+#
+# with QueryDebug(file_name="n1_problem.log"):
+#     for obj in data:
+#         print(obj.username)
+#         print("BOOKS:")
+#         for book in obj.books.all():
+#             print(book.title)
+
+
+# with QueryDebug(file_name="n1_problem.log"):
+#     books = Book.objects.all().select_related(
+#         'publisher',
+#         'category',
+#         'author'
+#     )
+#
+#     for book in books:
+#         pub_username = book.publisher.username if book.publisher else None
+#         cat_name = book.category.name if book.category else None
+#         author_lastname = book.author.last_name if book.author else None
+#
+#         print(book.title)
+#         print(pub_username)
+#         print(cat_name)
+#         print(author_lastname)
+
+
+from django.db import transaction
+
+
+with transaction.atomic():  #  ОДИН ЗАПРОС С n частями
+    # часть 1 -- создание автора
+    author = Author.objects.create(
+        username="JonathanB",
+        first_name="Jonathan",
+        last_name="Black",
+    )
+
+    # часть 2 создание профиля И ПРИВЯЗКА автора
+    author_profile = AuthorProfile.objects.create(
+        about="Test Profile with Transactions",
+        personal_website="https://example.com/jblack",
+        # author=author,
+    )
+
+
+from django.db.utils import IntegrityError
+
+try:
+
+    transaction.set_autocommit(False)
+    # часть 1 -- создание автора
+    author = Author.objects.create(
+        username="JonathanB",
+        first_name="Jonathan",
+        last_name="Black",
+    )
+
+    # часть 2 создание профиля И ПРИВЯЗКА автора
+    author_profile = AuthorProfile.objects.create(
+        about="Test Profile with Transactions",
+        personal_website="https://example.com/jblack",
+        # author=author,
+    )
+
+    transaction.commit()
+except IntegrityError as err:
+    transaction.rollback()
+    print(str(err))
+
+finally:
+    transaction.set_autocommit(True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Проводить подсчёт уникальных значений
+
+# 1. Какие значения поступают на вход? (цифры? строки? объекты?)
+# 2. Значения приходят как-то постепенно? Или один раз в какой-то структуре?
+# 3. Какой ответ нужно вернуть назад?
+
+
+# "(()()<{){}[]>)"
+#
+# def check_all_brackets_are_closed(data: str) -> bool:
+#     ...
+#
+#
+
+

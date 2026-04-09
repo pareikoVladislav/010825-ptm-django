@@ -80,7 +80,7 @@ from my_app.serializers import UserListSerializer, UserDetailSerializer
 
 
 class UserListCreateGenericView(ListCreateAPIView):
-    queryset = User.objects.all()
+    queryset = User.objects.filter(deleted=False)
     serializer_class = UserListSerializer
 
     def list(self, request: Request, *args, **kwargs) -> Response:
@@ -91,7 +91,10 @@ class UserListCreateGenericView(ListCreateAPIView):
         serializer = self.get_serializer(queryset, many=True)
 
         return Response(
-            data=serializer.data,
+            data={
+                "total_objects": self.get_queryset().count(),
+                "results": serializer.data
+            },
             status=status.HTTP_200_OK
         )
 

@@ -16,8 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from rest_framework.routers import DefaultRouter, SimpleRouter
 
-from my_app.views.authors import AuthorRetrieveUpdateDestroyGenericView, AuthorListGenericView
+from my_app.views.authors import AuthorRetrieveUpdateDestroyGenericView, AuthorListGenericView, AuthorsViewSet
 from my_app.views.books import (
     list_create_books,
     retrieve_update_destroy_book,
@@ -31,6 +32,13 @@ from my_app.views.categories import (
 )
 from my_app.views.user import UserListCreateGenericView, UserRetrieveUpdateDestroyGenericView
 
+
+# router = DefaultRouter()
+router = SimpleRouter()
+
+router.register('authors', AuthorsViewSet, 'authors')
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('books/', list_create_books),
@@ -41,6 +49,8 @@ urlpatterns = [
     path('categories/<int:pk>', CategoryRetrieveUpdateDestroyAPIView.as_view()),
     path('users/', UserListCreateGenericView.as_view()),
     path('users/<int:pk>/', UserRetrieveUpdateDestroyGenericView.as_view()),
-    path('authors/', AuthorListGenericView.as_view()),
-    path('authors/<str:author>/', AuthorRetrieveUpdateDestroyGenericView.as_view()),
+    # path('authors/', AuthorListGenericView.as_view()),
+    # path('authors/<str:author>/', AuthorRetrieveUpdateDestroyGenericView.as_view()),
 ]
+
+urlpatterns += router.urls

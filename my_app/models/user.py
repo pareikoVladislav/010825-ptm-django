@@ -1,6 +1,7 @@
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import UserManager, PermissionsMixin
 from django.db import models
+from django.utils import timezone
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -29,6 +30,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         auto_now_add=True
     )
 
+    # Soft Deletion mechanic
+    deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
     objects = UserManager()
 
     USERNAME_FIELD = "username"
@@ -39,3 +44,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         db_table = "users"
+
+    def delete(self, using = None, keep_parents = False):
+        self.deleted = True
+        self.deleted_at = timezone.now()
+        self.save()

@@ -1,6 +1,17 @@
 from rest_framework import serializers
 
-from my_app.models import Author
+from my_app.models import Author, Book
+
+
+class BooksShortInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = [
+            'id',
+            'title',
+            'price',
+            'genre',
+        ]
 
 
 class AuthorDetailSerializer(serializers.ModelSerializer):
@@ -10,11 +21,19 @@ class AuthorDetailSerializer(serializers.ModelSerializer):
 
 
 class AuthorListSerializer(serializers.ModelSerializer):
+    books_count = serializers.IntegerField(
+        required=False,
+        read_only=True
+    )
+    books = BooksShortInfoSerializer(many=True)
+
     class Meta:
         model = Author
         fields = [
             'id',
-            'last_name'
+            'last_name',
+            'books_count',
+            'books'
         ]
 
     def to_representation(self, instance):

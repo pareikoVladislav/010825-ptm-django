@@ -17,7 +17,8 @@ class UserListSerializer(serializers.ModelSerializer):
             'role',
             'gender',
             'date_joined',
-            'books_count'
+            'books_count',
+            'deleted',
         ]
 
 

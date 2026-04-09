@@ -1,9 +1,69 @@
 from typing import Any
 
+from django.db.models import Count
+from rest_framework import status
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.viewsets import (
+    GenericViewSet,
+    ReadOnlyModelViewSet,
+    ModelViewSet
+)
+from rest_framework.decorators import action
 
+from debug_tools import QueryDebug
 from my_app.models import Author
 from my_app.serializers import AuthorDetailSerializer, AuthorListSerializer
+
+
+class AuthorsViewSet(ModelViewSet):
+    queryset = Author.objects.all().prefetch_related('books')
+    # serializer_class = AuthorListSerializer
+
+    #    http method           viewset action
+    #        get                  list
+    #        get                  retrieve
+    #        get                  get_statistic
+    #        post                 create
+    #        put                  update
+    #        patch                partial_update
+    #        delete               destroy
+
+    def get_serializer_context(self) -> dict[str, Any]:
+        context: dict[str, Any] = super().get_serializer_context()
+
+        context['include-related'] = self.request.query_params.get(
+            'include-related', 'false'
+        ).lower() == 'true'  # True | False
+
+        return context
+
+    @QueryDebug(file_name="queries.log")
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    def get_serializer_class(self):
+        if self.action in {'list', 'get_statistic'}:
+            return AuthorListSerializer
+        return AuthorDetailSerializer
+
+    @action(methods=['GET',], detail=False)
+    def get_statistic(self, request: Request) -> Response:
+        print("="*100)
+        print(self.action)
+        print("="*100)
+
+        queryset = self.get_queryset().annotate(
+            books_count=Count('books')
+        )
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_200_OK
+        )
 
 
 class AuthorListGenericView(ListAPIView):

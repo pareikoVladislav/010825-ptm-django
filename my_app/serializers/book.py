@@ -3,7 +3,7 @@ from typing import Any
 
 from rest_framework import serializers
 
-from my_app.models import Book, Author
+from my_app.models import Book, Author, User
 from my_app.serializers.category import CategoryNestedSerializer
 
 
