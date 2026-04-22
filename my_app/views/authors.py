@@ -3,7 +3,13 @@ from typing import Any
 from django.db.models import Count
 from rest_framework import status
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+    IsAdminUser,
+    IsAuthenticatedOrReadOnly,
+    DjangoModelPermissions
+)
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import (
@@ -15,6 +21,7 @@ from rest_framework.decorators import action
 
 from debug_tools import QueryDebug
 from my_app.models import Author
+from my_app.permissions import IsStaffAndAdmin
 from my_app.serializers import AuthorDetailSerializer, AuthorListSerializer
 
 
@@ -22,8 +29,7 @@ class AuthorsViewSet(ModelViewSet):
     queryset = Author.objects.all().prefetch_related('books')
     # permission_classes = [AllowAny]
     # permission_classes = [IsAuthenticatedOrReadOnly]
-    permission_classes = [IsAdminUser]
-
+    permission_classes = [DjangoModelPermissions, IsStaffAndAdmin]
 
     # serializer_class = AuthorListSerializer
 

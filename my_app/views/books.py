@@ -1,5 +1,5 @@
 from django.db.models import QuerySet
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
@@ -9,9 +9,10 @@ from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination, CursorPagination
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
-
+from rest_framework.viewsets import ModelViewSet
 
 from my_app.models import Book
+from my_app.permissions import IsOwnerOrReadOnly
 from my_app.serializers import BooksSerializer, BookCreateSerializer, BookUpdateSerializer
 
 
@@ -22,6 +23,41 @@ class MyPageNumberPagination(PageNumberPagination):
 class MyCursorPagination(CursorPagination):
     page_size = 10
     ordering = 'id'
+
+
+class BookViewSet(ModelViewSet):
+    queryset = Book.objects.all()
+    permission_classes = [IsOwnerOrReadOnly] # Все разрешения в списке будут работать через AND
+    # ЕСЛИ ХОТЬ ОДИН класс-разрешение выдаст False --> False будет на весь запрос
+
+    def get_serializer_class(self):
+        if self.action in {'update', 'partial_update'}:
+            return BookUpdateSerializer
+        if self.action == 'create':
+            return BookCreateSerializer
+        return BooksSerializer
+
+    @action(detail=False, methods=['get'], url_path='my')
+    def get_my(self, request: Request, *args, **kwargs) -> Response:
+        print("=" * 100)
+        print(f"Пользователь, который сделал запрос: {request.user}")
+        print("=" * 100)
+
+        queryset = self.get_queryset().filter(
+            publisher=request.user
+        )
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+    def perform_create(self, serializer):
+        serializer.validated_data["owner"] = ...
+
+        serializer.save()
 
 
 class BooksListFiltersGenericView(ListAPIView):

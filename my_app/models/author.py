@@ -24,6 +24,11 @@ class Author(models.Model):
         db_table = "authors"
         ordering = ["username",]
 
+        permissions = [
+            #  само разрешение    Визуальное отображение в админ панели
+            ('can_get_statistic', 'Can Get Statistic'),
+        ]
+
 
 class AuthorProfile(models.Model):
     about: str = models.TextField(
