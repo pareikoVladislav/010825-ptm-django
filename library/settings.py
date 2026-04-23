@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework.authtoken',
     'drf_spectacular',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
 
     # local apps
     'my_app.apps.MyAppConfig',
@@ -61,8 +63,10 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'my_app.middlewares.JWTMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'my_app.middlewares.TestMiddleware',
 ]
 
 ROOT_URLCONF = 'library.urls'
@@ -318,8 +322,10 @@ SPECTACULAR_SETTINGS = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=3),  # время жизни токена доступа (в миллисекундах)
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1), # время жизни токена обновления (в миллисекундах)
-    'ROTATE_REFRESH_TOKENS': False,
+    'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': False,
+    'BLACKLIST_ENABLED': True,
+    'JTI_CLAIM': "jti",
 
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
