@@ -2,8 +2,7 @@ from urllib.request import Request
 
 from django.db.models import Count
 from rest_framework import status
-from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveAPIView, RetrieveUpdateAPIView, \
-    RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,7 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from my_app.models import User
 from my_app.serializers import UserListSerializer, UserDetailSerializer
-from my_app.serializers.user import UserLoginSerializer
+from my_app.serializers.user import UserLoginSerializer, RegisterUserSerializer
 from my_app.utils import set_jwt_cookies, REFRESH_COOKIE_NAME, clear_jwt_cookies
 
 
@@ -76,6 +75,23 @@ class LogoutUser(APIView):
         clear_jwt_cookies(response=response)
 
         return response
+
+
+class RegisterUserView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = RegisterUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        response = Response(
+            data=serializer.data,
+            status=status.HTTP_201_CREATED
+        )
+
+        return response
+
 
 # class UserListGenericView(GenericAPIView):
 #     def get(self, request: Request) -> Response:
